@@ -18,8 +18,8 @@ export const IssueComment: FC<Props> = ({ issue }) => {
           />
           <span className="mx-2">{issue.user.login} commented</span>
         </div>
-        <div className="p-4 bg-gray-700 text-white">
-          <ReactMarkdown>{issue.body}</ReactMarkdown>
+        <div className=" p-4 bg-gray-700 text-white">
+          <ReactMarkdown className={'overflow-auto'}>{issue.body}</ReactMarkdown>
         </div>
       </div>
     </div>

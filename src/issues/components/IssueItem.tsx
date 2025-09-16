@@ -1,6 +1,8 @@
 import { FiCheckCircle, FiInfo, FiMessageSquare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { GithubIssue } from '../interfaces';
+import { useQueryClient } from '@tanstack/react-query';
+import { getComments, getIssue } from '../actions';
 
 
 interface Props {
@@ -9,12 +11,32 @@ interface Props {
 
 export const IssueItem = ({ issue }: Props) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // dias de diferentes de hoy con el created_at
   const differenceInDays = Math.floor((Date.now() - new Date(issue.created_at).getTime()) / 86400000);
 
+  const prefetchData = () => {
+    // prefetch de la data que necesita /issues/issue/:issueNumber 
+    queryClient.prefetchQuery({
+      queryKey: ['issues', issue.number],
+      queryFn: () => getIssue(issue.number),
+      staleTime: 1000 * 60, // 1 minuto
+    });
+
+    // prefetch de la data que necesita /comments/:issueNumber 
+    queryClient.prefetchQuery({
+      queryKey: ['issues', issue.number, 'comments'],
+      queryFn: () => getComments(Number(issue.number)),
+      staleTime: 1000 * 60, // 1 minuto
+    });
+  }
+
+
   return (
-    <div className="animate-fadeIn flex items-center px-2 py-3 mb-5 border rounded-md bg-slate-900 hover:bg-slate-800">
+    <div
+      onMouseEnter={prefetchData}
+      className="animate-fadeIn flex items-center px-2 py-3 mb-5 border rounded-md bg-slate-900 hover:bg-slate-800">
 
       {
         issue.state === 'open'
