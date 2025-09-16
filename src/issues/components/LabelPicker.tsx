@@ -4,8 +4,8 @@ import { Loading } from '../shared';
 export const LabelPicker = () => {
   // custom hook para use query y labels
   const { labelsQuery } = useLabels();
-  console.log('hola')
-  console.log(labelsQuery.data)
+
+
   if (labelsQuery.isLoading || !labelsQuery.data) {
     return <Loading />;
   }
