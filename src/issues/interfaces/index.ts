@@ -1,2 +1,2 @@
-export * from './githublabel.interface';
+export * from './GithubLabel.interface';
 export * from './GithubIssues.interface';
