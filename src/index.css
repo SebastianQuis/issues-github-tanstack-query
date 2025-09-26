@@ -42,3 +42,7 @@ pre {
 .active {
   @apply bg-blue-700 border-blue-500 border-0;
 }
+
+.label-selected {
+  @apply bg-slate-600 text-white;
+}

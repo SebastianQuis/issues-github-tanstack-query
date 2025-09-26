@@ -2,7 +2,6 @@ import { FiCheckCircle, FiInfo, FiMessageSquare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { GithubIssue } from '../interfaces';
 import { useQueryClient } from '@tanstack/react-query';
-import { getComments, getIssue } from '../actions';
 
 
 interface Props {
@@ -16,26 +15,38 @@ export const IssueItem = ({ issue }: Props) => {
   // dias de diferentes de hoy con el created_at
   const differenceInDays = Math.floor((Date.now() - new Date(issue.created_at).getTime()) / 86400000);
 
-  const prefetchData = () => {
-    // prefetch de la data que necesita /issues/issue/:issueNumber 
-    queryClient.prefetchQuery({
-      queryKey: ['issues', issue.number],
-      queryFn: () => getIssue(issue.number),
-      staleTime: 1000 * 60, // 1 minuto
+  // pre recargar la data de cada item
+  // const prefetchData = () => {
+  //   // prefetch de la data que necesita /issues/issue/:issueNumber 
+  //   queryClient.prefetchQuery({
+  //     queryKey: ['issues', issue.number],
+  //     queryFn: () => getIssue(issue.number),
+  //     staleTime: 1000 * 60, // 1 minuto
+  //   });
+
+  //   // prefetch de la data que necesita /comments/:issueNumber 
+  //   queryClient.prefetchQuery({
+  //     queryKey: ['issues', issue.number, 'comments'],
+  //     queryFn: () => getComments(Number(issue.number)),
+  //     staleTime: 1000 * 60, // 1 minuto
+  //   });
+  // }
+
+  // preset de la data que necesita /issues/issue/:issueNumber y que lo tenemos en issue
+  const presetData = () => {
+    queryClient.setQueryData(['issues', issue.number], issue, {
+      // la peticcion http de issue/:id no se va a hacer en 1 minuto
+      updatedAt: Date.now() + (1000 * 60)
     });
 
-    // prefetch de la data que necesita /comments/:issueNumber 
-    queryClient.prefetchQuery({
-      queryKey: ['issues', issue.number, 'comments'],
-      queryFn: () => getComments(Number(issue.number)),
-      staleTime: 1000 * 60, // 1 minuto
-    });
+    // aca tambien se podria presetear los comments si los tuvieramos, traer el queryClient
   }
 
 
   return (
     <div
-      onMouseEnter={prefetchData}
+      // onMouseEnter={prefetchData} // pre cargar la data
+      onMouseEnter={presetData} // usar la data que ya tenemos
       className="animate-fadeIn flex items-center px-2 py-3 mb-5 border rounded-md bg-slate-900 hover:bg-slate-800">
 
       {
@@ -55,6 +66,16 @@ export const IssueItem = ({ issue }: Props) => {
           # {issue.number} opened {differenceInDays} days ago by
           <span className="font-bold"> {issue.user.login}</span>
         </span>
+        <div className='flex flex-wrap gap-2'>
+          {
+
+            issue.labels.map(label => (
+              <span key={label.id} className='text-xs px-2 py-1 rounded-md' style={{ backgroundColor: `#${label.color}`, color: 'black' }}>
+                {label.name}
+              </span>
+            ))
+          }
+        </div>
       </div>
 
       <img
