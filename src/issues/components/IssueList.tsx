@@ -19,9 +19,12 @@ export const IssueList = ({ issues, setState, state }: Props) => {
 
       {/* Lista de issues */}
       <div className="mt-4">
-        {issues.map((issue) => (
-          <IssueItem key={issue.id} issue={issue} />
-        ))}
+        {issues.length === 0
+          ? <p className='text-center text-gray-500 py-12'>No issues found</p>
+          : issues.map(issue => (
+            <IssueItem key={issue.id} issue={issue} />
+          ))
+        }
       </div>
     </>
   );

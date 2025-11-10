@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IssueList } from '../components/IssueList';
 import { LabelPicker } from '../components/LabelPicker';
-import { useIssues } from '../hooks/useIssues';
 import { Loading } from '../shared';
 import { State } from '../interfaces';
+import { useIssuesInfinite } from '../hooks/useIssuesInfinite';
 
-export const ListView = () => {
+export const ListViewInfinite = () => {
   // ========== STATE ISSUE ==========
   const [state, setState] = useState<State>(State.All);
 
@@ -14,18 +14,11 @@ export const ListView = () => {
 
 
   // ========== USE QUERY ISSUE ==========
-  const { issuesQuery, page, setPage, prevPage, nextPage } = useIssues({ state, labels: labelsSelected });
-  const { data: issues, isLoading } = issuesQuery;
+  const { issuesInfiniteQuery } = useIssuesInfinite({ state, labels: labelsSelected });
 
-  useEffect(() => {
-    setPage(1);
-  }, [state]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [labelsSelected]);
-
-
+  // flat porque la data.pages viene como un arreglo de arreglos
+  const issues = issuesInfiniteQuery.data?.pages.flat() || [];
+  const isLoading = issuesInfiniteQuery.isLoading;
 
   const handleLabelSelect = (label: string) => {
     // quitar si ya existe, agregar si no existe
@@ -43,31 +36,23 @@ export const ListView = () => {
           (isLoading || !issues)
             ? <Loading />
             : (
-              <>
+              <div className='flex flex-col gap-5'>
                 <IssueList issues={issues} setState={setState} state={state} />
 
-                {
-                  issues.length > 0 && (
-                    <div className='flex justify-between items-center mt-4 '>
-                      <button
-                        onClick={prevPage}
-                        className='p-2 bg-blue-700 hover:bg-blue-600 text-white rounded disabled:opacity-50 transition-all'>
-                        Previous
-                      </button>
+                <button
+                  onClick={() => issuesInfiniteQuery.fetchNextPage()}
+                  disabled={issuesInfiniteQuery.isFetchingNextPage}
+                  className='disabled:bg-gray-400 p-2 bg-blue-700 hover:bg-blue-600 text-white rounded disabled:opacity-50 transition-all'>
+                  {
+                    issuesInfiniteQuery.isFetchingNextPage
+                      ? 'Loading...'
+                      : issuesInfiniteQuery.hasNextPage
+                        ? 'Load more'
+                        : 'No more issues'
+                  }
+                </button>
 
-                      <span>{page}</span>
-
-                      <button
-                        onClick={nextPage}
-                        className='p-2 bg-blue-700 hover:bg-blue-600 text-white rounded disabled:opacity-50 transition-all'>
-                        Next
-                      </button>
-
-                    </div>
-                  )
-                }
-
-              </>
+              </div>
             )
         }
       </div>
